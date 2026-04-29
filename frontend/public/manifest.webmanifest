@@ -1,0 +1,14 @@
+{
+  "name": "EBF League Management System",
+  "short_name": "EBF League",
+  "description": "Ethiopian Basketball Federation – Real-time league standings & match management.",
+  "theme_color": "#0d1b2a",
+  "background_color": "#0d1b2a",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    { "src": "/logos/ebf.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/logos/ebf.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

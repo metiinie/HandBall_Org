@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0d1b2a" />
+    <meta name="description" content="Ethiopian Handball Federation League Management System – Real-time standings, match scheduling, and results." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="EHF League" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>EHF League Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/logos/ehf.png" />
+    <link rel="mask-icon" href="/favicon.svg" color="#0d1b2a" />
+    <script>
+      // Apply dark theme early if explicitly set
+      if (localStorage.getItem('ehf-theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+  </head>
+  <body class="transition-colors duration-300 antialiased font-sans">
+    <div id="app">
+      <div style="display: flex; flex-direction: column; width: 100vw; height: 100vh; align-items: center; justify-content: center; background-color: #0d1b2a;">
+        <img src="/logos/ehf.png" alt="EHF" style="width: 80px; height: 80px; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; opacity: 0.5;">
+        <style>@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(0.95); } }</style>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
