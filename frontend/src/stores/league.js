@@ -247,6 +247,7 @@ export const useLeagueStore = defineStore('league', () => {
     let remainingQueue = [...offlineQueue.value]
     
     for (const item of offlineQueue.value) {
+      if (!item || !item.matchId) continue
       try {
         const { data } = await api.patch(`/matches/${item.matchId}`, item.payload)
         const idx = matches.value.findIndex(m => m.id === item.matchId)

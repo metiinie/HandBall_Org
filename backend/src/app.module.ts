@@ -25,7 +25,7 @@ import { AuditLog } from './entities/audit-log.entity'
       url: process.env.DATABASE_URL,
       ssl: process.env.DATABASE_URL?.includes('sslmode=disable') ? false : { rejectUnauthorized: false },
       entities: [User, Team, Round, Match, RoundSnapshot, AuditLog],
-      synchronize: process.env.NODE_ENV === 'development',
+      synchronize: process.env.NODE_ENV === 'development' || process.env.DB_SYNC === 'true',
       logging: process.env.NODE_ENV === 'development' ? ['error'] : false,
     }),
     AuthModule,
