@@ -71,7 +71,7 @@ async function handleLogin() {
           <input
             v-model="email"
             type="email"
-            placeholder="admin@ebf.et"
+            placeholder="admin@ehf.et"
             autocomplete="email"
             class="input-field py-3"
           />

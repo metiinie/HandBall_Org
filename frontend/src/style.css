@@ -11,11 +11,11 @@
 /* ── Custom Design Tokens ─────────── */
 
 @theme {
-  --color-ebf-orange:       #E8571A;
-  --color-ebf-orange-light: #f0784a;
-  --color-ebf-orange-dark:  #c44810;
-  --color-ebf-gold:         #f5a623;
-  --color-ebf-gold-light:   #fbbf3a;
+  --color-ehf-orange:       #E8571A;
+  --color-ehf-orange-light: #f0784a;
+  --color-ehf-orange-dark:  #c44810;
+  --color-ehf-gold:         #f5a623;
+  --color-ehf-gold-light:   #fbbf3a;
   --color-neon-green:       #10B981;
 
   /* Typography */
@@ -98,7 +98,7 @@
 
 /* ── Custom Utilities ───────────────────────────────────────────────────── */
 
-@utility bg-gradient-ebf  { background-image: linear-gradient(135deg, #E8571A 0%, #c44810 100%); }
+@utility bg-gradient-ehf  { background-image: linear-gradient(135deg, #E8571A 0%, #c44810 100%); }
 @utility bg-gradient-neon { background-image: linear-gradient(135deg, #10B981 0%, #059669 100%); }
 
 @utility glass-panel {

@@ -39,12 +39,12 @@ export default defineConfig({
           {
             name: 'Standings',
             url: '/',
-            icons: [{ src: '/logos/ebf.png', sizes: '192x192' }]
+            icons: [{ src: '/logos/ehf.png', sizes: '192x192' }]
           },
           {
             name: 'Matches',
             url: '/matches',
-            icons: [{ src: '/logos/ebf.png', sizes: '192x192' }]
+            icons: [{ src: '/logos/ehf.png', sizes: '192x192' }]
           }
         ]
       },

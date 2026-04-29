@@ -73,7 +73,7 @@ const scrollToDate = (rawDate) => {
     <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
       <div class="space-y-1">
         <h1 class="text-2xl font-black tracking-tight" style="color: var(--text-heading);">{{ t('matches.title') }}</h1>
-        <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted);">FIBA Standard Timing & Scoring</p>
+        <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted);">IHF Standard Timing & Scoring</p>
       </div>
       <div class="w-full md:w-auto">
         <GlobalFilter />
@@ -107,7 +107,7 @@ const scrollToDate = (rawDate) => {
         </div>
       </div>
 
-      <!-- NBA Horizontal Date Strip -->
+      <!-- Handball Horizontal Date Strip -->
       <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <button 
           v-for="date in allDates" 
