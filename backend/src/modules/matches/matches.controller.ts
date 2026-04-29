@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Sse } from '@nestjs/common'
-import { Observable } from 'rxjs'
+import { Observable, interval, map, merge } from 'rxjs'
 import { MatchesService } from './matches.service'
 import { SseService } from './sse.service'
 import { CreateMatchDto, UpdateMatchDto, UpdateScoreDto, ForfeitMatchDto } from './dto/match.dto'
@@ -50,6 +50,8 @@ export class MatchesController {
   // SSE endpoint for real-time updates
   @Sse('stream/:roundId')
   streamMatches(@Param('roundId') roundId: string): Observable<any> {
-    return this.sseService.getSubject(roundId).asObservable()
+    const heartbeat = interval(15000).pipe(map(() => ({ data: { type: 'ping' } })))
+    const updates = this.sseService.getSubject(roundId).asObservable()
+    return merge(heartbeat, updates)
   }
 }
