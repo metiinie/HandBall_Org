@@ -17,10 +17,23 @@ async function bootstrap() {
 
   // CORS — allow Vue frontend with credentials (needed for HttpOnly cookies)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow localhost and any Vercel domain
+      const allowedPatterns = [
+        /^http:\/\/localhost:\d+$/,
+        /\.vercel\.app$/,
+        new RegExp(process.env.FRONTEND_URL?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') || 'NOMATCH')
+      ]
+      
+      if (!origin || allowedPatterns.some(pattern => pattern.test(origin))) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 
   // All routes under /api prefix, except root and health

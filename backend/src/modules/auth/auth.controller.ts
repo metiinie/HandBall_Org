@@ -36,7 +36,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('ehf_token', { path: '/' })
+    res.clearCookie('ehf_token', COOKIE_OPTIONS) // use the same options to ensure match
     return { message: 'Logged out successfully' }
   }
 }
