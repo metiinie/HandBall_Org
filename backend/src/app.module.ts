@@ -10,6 +10,7 @@ import { MatchesModule } from './modules/matches/matches.module'
 import { SnapshotsModule } from './modules/snapshots/snapshots.module'
 import { AuditModule } from './modules/audit/audit.module'
 import { AppController } from './app.controller'
+import { InitializationService } from './database/init.service'
 
 import { User } from './entities/user.entity'
 import { Team } from './entities/team.entity'
@@ -34,7 +35,9 @@ import { AuditLog } from './entities/audit-log.entity'
     MatchesModule,
     SnapshotsModule,
     AuditModule,
+    TypeOrmModule.forFeature([User, Team]),
   ],
   controllers: [AppController],
+  providers: [InitializationService],
 })
 export class AppModule {}
