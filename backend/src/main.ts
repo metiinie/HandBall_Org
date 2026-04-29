@@ -23,8 +23,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 
-  // All routes under /api prefix
-  app.setGlobalPrefix('api')
+  // All routes under /api prefix, except root and health
+  app.setGlobalPrefix('api', { exclude: ['/', 'health'] })
 
   const port = process.env.PORT || 3001
   await app.listen(port, '0.0.0.0')

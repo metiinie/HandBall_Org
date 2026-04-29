@@ -9,6 +9,7 @@ import { RoundsModule } from './modules/rounds/rounds.module'
 import { MatchesModule } from './modules/matches/matches.module'
 import { SnapshotsModule } from './modules/snapshots/snapshots.module'
 import { AuditModule } from './modules/audit/audit.module'
+import { AppController } from './app.controller'
 
 import { User } from './entities/user.entity'
 import { Team } from './entities/team.entity'
@@ -34,5 +35,6 @@ import { AuditLog } from './entities/audit-log.entity'
     SnapshotsModule,
     AuditModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

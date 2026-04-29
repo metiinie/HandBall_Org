@@ -52,10 +52,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/ydamkxbjjquthugpxeia\.supabase\.co\/.*/i,
+            // Cache API requests from our backend
+            urlPattern: ({ url }) => url.pathname.startsWith('/api'),
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-api-cache',
+              cacheName: 'api-cache',
               expiration: { maxEntries: 50, maxAgeSeconds: 300 },
               cacheableResponse: { statuses: [0, 200] },
             },
