@@ -4,6 +4,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppHeader from '@/components/AppHeader.vue'
+import ReloadPrompt from '@/components/ReloadPrompt.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 const authStore = useAuthStore()
@@ -60,6 +61,9 @@ onMounted(() => {
           </Transition>
         </RouterView>
       </main>
+      
+      <!-- PWA Update Prompt -->
+      <ReloadPrompt />
     </div>
   </div>
 </template>

@@ -9,9 +9,9 @@ export default defineConfig({
     vue(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'script',
-      includeAssets: ['logos/ehf.png'],
+      registerType: 'prompt',
+      injectRegister: 'auto',
+      includeAssets: ['logos/ehf.png', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'EHF League Management System',
         short_name: 'EHF League',
@@ -35,6 +35,7 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ],
+        categories: ['sports', 'management'],
         shortcuts: [
           {
             name: 'Standings',
@@ -50,14 +51,17 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            // Cache API requests from our backend
-            urlPattern: ({ url }) => url.pathname.startsWith('/api'),
+            urlPattern: ({ url }) => url.pathname.includes('/api'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+              expiration: { 
+                maxEntries: 100, 
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
@@ -65,6 +69,14 @@ export default defineConfig({
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: { cacheName: 'google-fonts-cache' },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: { 
+              cacheName: 'gstatic-fonts-cache',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }
+            },
           },
         ],
       },
