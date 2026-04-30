@@ -17,7 +17,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // If the error is an authentication error and we are not already on the login page
-    if (error.response?.status === 401 && router.currentRoute.value.name !== 'login') {
+    // ONLY redirect if the current route actually REQUIRES authentication
+    if (error.response?.status === 401 && 
+        router.currentRoute.value.name !== 'login' && 
+        router.currentRoute.value.meta?.requiresAuth) {
       // The HttpOnly cookie is either missing or expired
       // Redirect to login page
       router.push({ name: 'login' })
