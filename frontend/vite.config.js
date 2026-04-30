@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'script',
-      includeAssets: ['favicon.svg', 'logos/ehf.png'],
+      includeAssets: ['logos/ehf.png'],
       manifest: {
         name: 'EHF League Management System',
         short_name: 'EHF League',

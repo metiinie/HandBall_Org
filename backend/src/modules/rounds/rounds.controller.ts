@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, Delete, Req } from '@nestjs/common'
 import { RoundsService } from './rounds.service'
 import { CreateRoundDto, UpdateRoundDto } from './dto/round.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
@@ -18,31 +18,31 @@ export class RoundsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createRoundDto: CreateRoundDto) {
-    return this.roundsService.create(createRoundDto)
+  create(@Req() req: any, @Body() createRoundDto: CreateRoundDto) {
+    return this.roundsService.create(createRoundDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoundDto: UpdateRoundDto) {
-    return this.roundsService.update(id, updateRoundDto)
+  update(@Param('id') id: string, @Req() req: any, @Body() updateRoundDto: UpdateRoundDto) {
+    return this.roundsService.update(id, updateRoundDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/activate')
-  activate(@Param('id') id: string) {
-    return this.roundsService.activate(id)
+  activate(@Param('id') id: string, @Req() req: any) {
+    return this.roundsService.activate(id, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/finalize')
-  finalize(@Param('id') id: string, @Body() body: { standings: any }) {
-    return this.roundsService.finalize(id, body.standings)
+  finalize(@Param('id') id: string, @Req() req: any) {
+    return this.roundsService.finalize(id, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roundsService.remove(id)
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.roundsService.remove(id, req.user.id)
   }
 }

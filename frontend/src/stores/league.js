@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/lib/api.js'
-import { calculateStandings } from '@/utils/standings.js'
 import { getErrorMessage } from '@/utils/errorMapper.js'
 import { useAuthStore } from '@/stores/auth.js'
 
@@ -10,6 +9,7 @@ export const useLeagueStore = defineStore('league', () => {
   const rounds = ref([])
   const activeRound = ref(null)
   const matches = ref([])
+  const standings = ref([])
   const loading = ref(false)
   const error = ref(null)
 
@@ -17,11 +17,6 @@ export const useLeagueStore = defineStore('league', () => {
   const selectedGender = ref('ወንድ')
   const selectedSeason = ref(2025)
 
-  /** Reactive standings computed from current round matches + teams */
-  const standings = computed(() => {
-    if (!teams.value.length) return []
-    return calculateStandings(matches.value, teams.value)
-  })
 
   let matchEventSource = null
 
@@ -44,7 +39,6 @@ export const useLeagueStore = defineStore('league', () => {
   async function createTeam(payload) {
     const { data } = await api.post('/teams', payload)
     teams.value.push(data)
-    logAuditAction('CREATE_TEAM', data.id, payload)
     return data
   }
 
@@ -61,7 +55,6 @@ export const useLeagueStore = defineStore('league', () => {
       const idx = teams.value.findIndex(t => t.id === id)
       if (idx !== -1) teams.value[idx] = data
       
-      logAuditAction('UPDATE_TEAM', id, payload)
       return data
     } catch (err) {
       const idx = teams.value.findIndex(t => t.id === id)
@@ -73,7 +66,6 @@ export const useLeagueStore = defineStore('league', () => {
   async function deleteTeam(id) {
     await api.delete(`/teams/${id}`)
     teams.value = teams.value.filter(t => t.id !== id)
-    logAuditAction('DELETE_TEAM', id, { team_id: id })
   }
 
   // ─── Rounds ──────────────────────────────────────────────────────────────
@@ -100,7 +92,6 @@ export const useLeagueStore = defineStore('league', () => {
     const idx = rounds.value.findIndex(r => r.id === id)
     if (idx !== -1) rounds.value[idx] = data
     if (activeRound.value?.id === id) activeRound.value = data
-    logAuditAction('UPDATE_ROUND', id, payload)
     return data
   }
 
@@ -112,7 +103,6 @@ export const useLeagueStore = defineStore('league', () => {
       status: 'Pending'
     })
     rounds.value.push(data)
-    logAuditAction('CREATE_ROUND', data.id, data)
     return data
   }
 
@@ -120,7 +110,6 @@ export const useLeagueStore = defineStore('league', () => {
     loading.value = true
     try {
       const { data } = await api.post(`/rounds/${roundId}/activate`)
-      logAuditAction('SET_ACTIVE_ROUND', roundId, { })
       
       // Refresh rounds state
       await fetchRounds(data.season_year)
@@ -139,7 +128,6 @@ export const useLeagueStore = defineStore('league', () => {
     if (matches.value.length > 0 && matches.value[0].round_id === data.round_id) {
        matches.value.push(data)
     }
-    logAuditAction('CREATE_MATCH', data.id, payload)
     return data
   }
 
@@ -155,7 +143,6 @@ export const useLeagueStore = defineStore('league', () => {
       const { data } = await api.patch(`/matches/${id}`, payload)
       const idx = matches.value.findIndex(m => m.id === id)
       if (idx !== -1) matches.value[idx] = data
-      logAuditAction('UPDATE_MATCH', id, payload)
       return data
     } catch (err) {
       if (!navigator.onLine) {
@@ -177,19 +164,32 @@ export const useLeagueStore = defineStore('league', () => {
     const match = matches.value.find(m => m.id === id)
     await api.delete(`/matches/${id}`)
     matches.value = matches.value.filter(m => m.id !== id)
-    logAuditAction('DELETE_MATCH', id, { match_id: id })
   }
 
   async function fetchMatches(roundId) {
     loading.value = true
     error.value = null
     try {
-      const { data } = await api.get(`/matches?round_id=${roundId}`)
-      matches.value = data || []
+      const [matchRes, standingsRes] = await Promise.all([
+        api.get(`/matches?round_id=${roundId}`),
+        api.get(`/standings?round_id=${roundId}`)
+      ])
+      matches.value = matchRes.data || []
+      standings.value = standingsRes.data || []
     } catch (e) {
       error.value = getErrorMessage(e)
     } finally {
       loading.value = false
+    }
+  }
+
+  async function fetchStandings(roundId) {
+    if (!roundId) return
+    try {
+      const { data } = await api.get(`/standings?round_id=${roundId}`)
+      standings.value = data || []
+    } catch (e) {
+      console.error('Failed to fetch standings', e)
     }
   }
 
@@ -218,6 +218,9 @@ export const useLeagueStore = defineStore('league', () => {
           cumulativeMatches.value[cumIdx] = data
         }
       }
+      
+      // Trigger standings refresh on any match update
+      fetchStandings(roundId)
     }
 
     matchEventSource.onerror = (err) => {
@@ -268,23 +271,6 @@ export const useLeagueStore = defineStore('league', () => {
     setTimeout(syncOfflineQueue, 2000)
   }
 
-  // ─── Audit Logging ───────────────────────────────────────────────────────
-
-  async function logAuditAction(actionName, entityId, payload) {
-    try {
-      const auth = useAuthStore()
-      if (!auth.user?.id) return
-
-      await api.post('/audit', {
-        action: actionName,
-        entity_id: String(entityId),
-        details: payload
-      })
-    } catch (e) {
-      console.warn('Audit Log Warning', e)
-    }
-  }
-
   async function updateMatchScore(matchId, homeScore, awayScore, isOT = false) {
     const targetIdx = matches.value.findIndex(m => m.id === matchId)
     if (targetIdx === -1) return null
@@ -307,7 +293,6 @@ export const useLeagueStore = defineStore('league', () => {
       })
       const idx = matches.value.findIndex(m => m.id === matchId)
       if (idx !== -1) matches.value[idx] = data
-      logAuditAction('UPDATE_MATCH_SCORE', matchId, { homeScore, awayScore, isOT })
       return data
     } catch (err) {
       if (!navigator.onLine) {
@@ -334,9 +319,9 @@ export const useLeagueStore = defineStore('league', () => {
     if (targetIdx === -1) return null
 
     const originalMatch = { ...matches.value[targetIdx] }
-    // IHF Standard 12-0
-    const homeScore = forfeitingTeamSide === 'home' ? 0 : 12
-    const awayScore = forfeitingTeamSide === 'away' ? 0 : 12
+    // IHF Standard 10-0
+    const homeScore = forfeitingTeamSide === 'home' ? 0 : 10
+    const awayScore = forfeitingTeamSide === 'away' ? 0 : 10
     
     matches.value[targetIdx] = {
       ...originalMatch,
@@ -351,7 +336,6 @@ export const useLeagueStore = defineStore('league', () => {
       const { data } = await api.patch(`/matches/${matchId}/forfeit`, { forfeit_side: forfeitingTeamSide })
       const idx = matches.value.findIndex(m => m.id === matchId)
       if (idx !== -1) matches.value[idx] = data
-      logAuditAction('MARK_FORFEIT', matchId, { forfeitingTeamSide })
       return data
     } catch (err) {
       const idx = matches.value.findIndex(m => m.id === matchId)
@@ -364,15 +348,12 @@ export const useLeagueStore = defineStore('league', () => {
 
   async function finalizeRound(roundId) {
     // We'll let the backend handle the heavy lifting (snapshotting + status update + next round activation)
-    const { data } = await api.post(`/rounds/${roundId}/finalize`, {
-        standings: standings.value // we still send the calculated standings to be safe
-    })
+    await api.post(`/rounds/${roundId}/finalize`)
     
     const current = rounds.value.find(r => r.id === roundId)
     const seasonYear = current?.season_year || selectedSeason.value
     await fetchRounds(seasonYear)
     matches.value = []
-    logAuditAction('FINALIZE_ROUND', roundId, {})
   }
 
   async function deleteRound(roundId) {
@@ -380,21 +361,24 @@ export const useLeagueStore = defineStore('league', () => {
     await api.delete(`/rounds/${roundId}`)
     rounds.value = rounds.value.filter(r => r.id !== roundId)
     if (activeRound.value?.id === roundId) activeRound.value = null
-    logAuditAction('DELETE_ROUND', roundId, { round_id: roundId })
   }
 
   const cumulativeMatches = ref([])
-  const cumulativeStandings = computed(() => {
-    if (!teams.value.length) return []
-    return calculateStandings(cumulativeMatches.value, teams.value)
-  })
+  const cumulativeStandings = ref([])
 
   async function fetchCumulativeMatches(roundId) {
     loading.value = true
     error.value = null
     try {
-      const { data } = await api.get(`/matches/cumulative?round_id=${roundId}`)
-      cumulativeMatches.value = data || []
+       const rid = roundId || (activeRound.value ? activeRound.value.id : null)
+       if (!rid) return
+
+       const [matchRes, standingsRes] = await Promise.all([
+         api.get(`/matches/cumulative?round_id=${rid}`),
+         api.get(`/standings/cumulative?gender=${selectedGender.value}&season_year=${selectedSeason.value}`)
+       ])
+       cumulativeMatches.value = matchRes.data || []
+       cumulativeStandings.value = standingsRes.data || []
     } catch (e) {
       error.value = getErrorMessage(e)
     } finally {

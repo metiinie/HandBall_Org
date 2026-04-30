@@ -4,9 +4,10 @@ import { MatchesController } from './matches.controller'
 import { MatchesService } from './matches.service'
 import { SseService } from './sse.service'
 import { Match } from '../../entities/match.entity'
+import { AuditModule } from '../audit/audit.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Match])],
+  imports: [TypeOrmModule.forFeature([Match]), AuditModule],
   controllers: [MatchesController],
   providers: [MatchesService, SseService],
   exports: [MatchesService],

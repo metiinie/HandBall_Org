@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req } from '@nestjs/common'
 import { TeamsService } from './teams.service'
 import { CreateTeamDto, UpdateTeamDto } from './dto/team.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
@@ -14,19 +14,19 @@ export class TeamsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamsService.create(createTeamDto)
+  create(@Req() req: any, @Body() createTeamDto: CreateTeamDto) {
+    return this.teamsService.create(createTeamDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTeamDto: UpdateTeamDto) {
-    return this.teamsService.update(id, updateTeamDto)
+  update(@Param('id') id: string, @Req() req: any, @Body() updateTeamDto: UpdateTeamDto) {
+    return this.teamsService.update(id, updateTeamDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.teamsService.remove(id)
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.teamsService.remove(id, req.user.id)
   }
 }

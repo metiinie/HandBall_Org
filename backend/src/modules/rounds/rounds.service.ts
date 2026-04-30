@@ -4,6 +4,8 @@ import { Repository } from 'typeorm'
 import { Round } from '../../entities/round.entity'
 import { CreateRoundDto, UpdateRoundDto } from './dto/round.dto'
 import { RoundSnapshot } from '../../entities/round-snapshot.entity'
+import { StandingsService } from '../standings/standings.service'
+import { AuditService } from '../audit/audit.service'
 
 @Injectable()
 export class RoundsService {
@@ -12,6 +14,8 @@ export class RoundsService {
     private readonly roundRepo: Repository<Round>,
     @InjectRepository(RoundSnapshot)
     private readonly snapshotRepo: Repository<RoundSnapshot>,
+    private readonly standingsService: StandingsService,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(gender?: string, season_year?: number): Promise<Round[]> {
@@ -31,18 +35,22 @@ export class RoundsService {
     return round
   }
 
-  async create(dto: CreateRoundDto): Promise<Round> {
+  async create(dto: CreateRoundDto, userId?: string): Promise<Round> {
     const round = this.roundRepo.create({ ...dto, status: dto.status || 'Pending' })
-    return this.roundRepo.save(round)
+    const saved = await this.roundRepo.save(round)
+    if (userId) await this.auditService.logAction(userId, 'CREATE_ROUND', saved.id, dto)
+    return saved
   }
 
-  async update(id: string, dto: UpdateRoundDto): Promise<Round> {
+  async update(id: string, dto: UpdateRoundDto, userId?: string): Promise<Round> {
     const round = await this.findOne(id)
     Object.assign(round, dto)
-    return this.roundRepo.save(round)
+    const saved = await this.roundRepo.save(round)
+    if (userId) await this.auditService.logAction(userId, 'UPDATE_ROUND', saved.id, dto)
+    return saved
   }
 
-  async activate(id: string): Promise<Round> {
+  async activate(id: string, userId?: string): Promise<Round> {
     const targetRound = await this.findOne(id)
 
     // Deactivate currently active round for same gender and season
@@ -53,11 +61,16 @@ export class RoundsService {
 
     // Activate the target round
     targetRound.status = 'Active'
-    return this.roundRepo.save(targetRound)
+    const saved = await this.roundRepo.save(targetRound)
+    if (userId) await this.auditService.logAction(userId, 'SET_ACTIVE_ROUND', saved.id, { })
+    return saved
   }
 
-  async finalize(id: string, standings: any): Promise<Round> {
+  async finalize(id: string, userId?: string): Promise<Round> {
     const round = await this.findOne(id)
+    
+    // Calculate standings internally
+    const standings = await this.standingsService.getStandingsByRound(round.id)
     
     // 1. Create Snapshot
     const snapshot = this.snapshotRepo.create({
@@ -87,11 +100,14 @@ export class RoundsService {
       await this.roundRepo.save(nextRound)
     }
 
+    if (userId) await this.auditService.logAction(userId, 'FINALIZE_ROUND', round.id, { })
+
     return round
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId?: string): Promise<void> {
     const round = await this.findOne(id)
     await this.roundRepo.remove(round)
+    if (userId) await this.auditService.logAction(userId, 'DELETE_ROUND', id, { round_number: round.round_number })
   }
 }

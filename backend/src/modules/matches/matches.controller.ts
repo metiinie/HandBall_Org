@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Sse } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Sse, Req } from '@nestjs/common'
 import { Observable, interval, map, merge } from 'rxjs'
 import { MatchesService } from './matches.service'
 import { SseService } from './sse.service'
@@ -19,32 +19,32 @@ export class MatchesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createMatchDto: CreateMatchDto) {
-    return this.matchesService.create(createMatchDto)
+  create(@Req() req: any, @Body() createMatchDto: CreateMatchDto) {
+    return this.matchesService.create(createMatchDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatchDto: UpdateMatchDto) {
-    return this.matchesService.update(id, updateMatchDto)
+  update(@Param('id') id: string, @Req() req: any, @Body() updateMatchDto: UpdateMatchDto) {
+    return this.matchesService.update(id, updateMatchDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.matchesService.remove(id)
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.matchesService.remove(id, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/score')
-  updateScore(@Param('id') id: string, @Body() updateScoreDto: UpdateScoreDto) {
-    return this.matchesService.updateScore(id, updateScoreDto)
+  updateScore(@Param('id') id: string, @Req() req: any, @Body() updateScoreDto: UpdateScoreDto) {
+    return this.matchesService.updateScore(id, updateScoreDto, req.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/forfeit')
-  forfeit(@Param('id') id: string, @Body() forfeitDto: ForfeitMatchDto) {
-    return this.matchesService.forfeit(id, forfeitDto)
+  forfeit(@Param('id') id: string, @Req() req: any, @Body() forfeitDto: ForfeitMatchDto) {
+    return this.matchesService.forfeit(id, forfeitDto, req.user.id)
   }
 
   // SSE endpoint for real-time updates

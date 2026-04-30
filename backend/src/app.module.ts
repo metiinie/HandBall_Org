@@ -9,6 +9,7 @@ import { RoundsModule } from './modules/rounds/rounds.module'
 import { MatchesModule } from './modules/matches/matches.module'
 import { SnapshotsModule } from './modules/snapshots/snapshots.module'
 import { AuditModule } from './modules/audit/audit.module'
+import { StandingsModule } from './modules/standings/standings.module'
 import { AppController } from './app.controller'
 import { InitializationService } from './database/init.service'
 
@@ -35,6 +36,7 @@ import { AuditLog } from './entities/audit-log.entity'
     MatchesModule,
     SnapshotsModule,
     AuditModule,
+    StandingsModule,
     TypeOrmModule.forFeature([User, Team]),
   ],
   controllers: [AppController],
