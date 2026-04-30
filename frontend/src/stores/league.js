@@ -68,6 +68,17 @@ export const useLeagueStore = defineStore('league', () => {
     teams.value = teams.value.filter(t => t.id !== id)
   }
 
+  async function uploadTeamLogo(file) {
+    const formData = new FormData()
+    formData.append('logo', file)
+    const { data } = await api.post('/teams/upload-logo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return data // { url: '/uploads/logos/...' }
+  }
+
   // ─── Rounds ──────────────────────────────────────────────────────────────
 
   async function fetchRounds(seasonYear = null) {
@@ -398,7 +409,7 @@ export const useLeagueStore = defineStore('league', () => {
   return {
     teams, rounds, activeRound, matches, cumulativeMatches, standings, cumulativeStandings, loading, error,
     selectedGender, selectedSeason,
-    fetchTeams, createTeam, updateTeam, deleteTeam,
+    fetchTeams, createTeam, updateTeam, deleteTeam, uploadTeamLogo,
     fetchRounds, createRound, setActiveRound,
     fetchMatches, fetchCumulativeMatches, createMatch, updateMatch, deleteMatch,
     subscribeToMatches, unsubscribeFromMatches,

@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { BASE_SERVER_URL } from '@/lib/api.js'
 
 const props = defineProps({
   team: { type: Object, default: null },
@@ -17,6 +18,13 @@ watch(() => props.team?.logo_url, () => {
 function handleError() {
   error.value = true
 }
+
+const resolvedLogo = computed(() => {
+  const url = props.team?.logo_url
+  if (!url) return null
+  if (url.startsWith('http') || url.startsWith('data:')) return url
+  return BASE_SERVER_URL + url
+})
 </script>
 
 <template>
@@ -26,7 +34,7 @@ function handleError() {
   >
     <img 
       v-if="team?.logo_url && !error" 
-      :src="team.logo_url" 
+      :src="resolvedLogo" 
       crossorigin="anonymous"
       @error="handleError"
       class="w-full h-full object-cover"

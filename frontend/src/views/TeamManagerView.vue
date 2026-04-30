@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLeagueStore } from '@/stores/league.js'
+import { BASE_SERVER_URL } from '@/lib/api.js'
 import { getTeamName } from '@/utils/teamName.js'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import GlobalFilter from '@/components/GlobalFilter.vue'
@@ -19,6 +20,7 @@ const formLoading = ref(false)
 const deleteLoading = ref(false)
 const formError = ref('')
 const formSuccess = ref('')
+const uploadingLogo = ref(false)
 const showForm = ref(false)
 
 const form = ref({ name: '', gender: 'ወንድ', logo_url: '' })
@@ -96,6 +98,28 @@ async function handleDelete() {
   } finally {
     deleteLoading.value = false
   }
+}
+
+async function handleLogoUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  uploadingLogo.value = true
+  formError.value = ''
+  try {
+    const res = await league.uploadTeamLogo(file)
+    form.value.logo_url = res.url
+  } catch (e) {
+    formError.value = t('admin.logo_upload_failed') || 'Logo upload failed'
+  } finally {
+    uploadingLogo.value = false
+  }
+}
+
+function resolveLogo(url) {
+  if (!url) return null
+  if (url.startsWith('http') || url.startsWith('data:')) return url
+  return BASE_SERVER_URL + url
 }
 
 </script>
@@ -191,8 +215,31 @@ async function handleDelete() {
               </div>
             </div>
             <div class="md:col-span-4">
-              <label class="block text-[10px] font-bold uppercase tracking-wider mb-2" style="color: var(--text-muted);">{{ t('admin.logo_url') }}</label>
-              <input v-model="form.logo_url" type="url" class="input-field" placeholder="https://…"/>
+              <label class="block text-[10px] font-bold uppercase tracking-wider mb-2" style="color: var(--text-muted);">{{ t('admin.team_logo') || 'Team Logo' }}</label>
+              <div class="flex items-center gap-3">
+                <div class="relative group cursor-pointer" @click="$refs.logoInput.click()">
+                  <div class="w-12 h-12 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors"
+                       :class="form.logo_url ? 'border-blue-500/50' : 'border-slate-300 hover:border-blue-400'">
+                    <img v-if="form.logo_url" :src="resolveLogo(form.logo_url)" class="w-full h-full object-cover" />
+                    <svg v-else class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </div>
+                  <div v-if="uploadingLogo" class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center">
+                    <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <input 
+                    ref="logoInput"
+                    type="file" 
+                    class="hidden" 
+                    accept="image/*"
+                    @change="handleLogoUpload"
+                  />
+                  <input v-model="form.logo_url" type="text" class="input-field text-[10px]" :placeholder="t('admin.logo_url_placeholder') || 'Upload or enter URL'"/>
+                </div>
+              </div>
             </div>
             <div class="md:col-span-12 flex justify-end gap-3 mt-2">
               <button type="button" @click="cancelForm" class="btn-ghost">{{ t('admin.cancel') || 'Cancel' }}</button>

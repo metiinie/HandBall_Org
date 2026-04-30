@@ -2,6 +2,7 @@ import axios from 'axios'
 import router from '../router'
 
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+export const BASE_SERVER_URL = API_URL.replace(/\/api$/, '')
 
 // Create an Axios instance
 const api = axios.create({

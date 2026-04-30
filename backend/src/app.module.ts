@@ -12,6 +12,8 @@ import { AuditModule } from './modules/audit/audit.module'
 import { StandingsModule } from './modules/standings/standings.module'
 import { AppController } from './app.controller'
 import { InitializationService } from './database/init.service'
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path'
 
 import { User } from './entities/user.entity'
 import { Team } from './entities/team.entity'
@@ -38,6 +40,10 @@ import { AuditLog } from './entities/audit-log.entity'
     AuditModule,
     StandingsModule,
     TypeOrmModule.forFeature([User, Team]),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
   ],
   controllers: [AppController],
   providers: [InitializationService],
